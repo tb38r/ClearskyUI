@@ -29,15 +29,14 @@ import './list-view.css';
  * @param {{
  *  className?: string,
  *  entry: AccountListEntry,
- * style:any
  * }} _
  */
-export function ListViewEntry({ className, entry, style }) {
+export function ListViewEntry({ className, entry }) {
   const listcount = useListSize(entry?.url);
   const count  = listcount?.data?.count || ''
 
   return (
-    <li className={'lists-entry ' + (className || '')} style={style}>
+    <li className={'lists-entry ' + (className || '')} >
       <div className="row">
         <AccountShortEntry
           className="list-owner"

@@ -1,6 +1,6 @@
 // @ts-check
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 
 import SearchIcon from '@mui/icons-material/Search';
 import { Button, CircularProgress } from '@mui/material';
@@ -16,6 +16,7 @@ import { VisibleWithDelay } from '../../common-components/visible';
 import { resolveHandleOrDID } from '../../api';
 import { useAccountResolver } from '../account-resolver';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
+import { Virtuoso } from 'react-virtuoso';
 
 export function Lists() {
   const accountQuery = useAccountResolver();
@@ -37,17 +38,21 @@ export function Lists() {
     ? allLists
     : matchSearch(allLists, search, () => setTick(tick + 1));
 
-  const listRef = useRef(null);
+    const [listItems, setListItems] = useState(()=>filteredLists)
+  const listRef= useRef()
+  
+console.log('fl', filteredLists.length)
+console.log('is', )
+// console.log('li', listItems)
+// console.log('isfetching', isFetching)
 
-  const rowVirtualizer = useWindowVirtualizer({
-    count: filteredLists?.length,
-    estimateSize: () => 25,
-    overscan: 5,
-    gap: 50,
-    scrollMargin: listRef.current ? listRef.current.offsetTop : 0,
-  });
+useEffect(()=>{
+  setListItems(filteredLists)
 
-  console.log(rowVirtualizer.getVirtualItems().length)
+}, [filteredLists.length])
+
+
+  console.log('hasmore?', hasNextPage);
 
   // Show loader for initial load
   if (isLoading) {
@@ -119,48 +124,18 @@ export function Lists() {
       </h3>
 
       <ul className={'lists-as-list-view '}>
-        <div
-          style={{
-            height: `${rowVirtualizer.getTotalSize()}px`,
-            overflow: 'hidden',
-          }}
+        <div>
+          <Virtuoso
           ref={listRef}
-        >
-          <div
-            style={{
-              width: '100%',
-              position: 'relative',
-              height: `${rowVirtualizer.getTotalSize()}px`,
-            }}
-          >
-            
-              {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                const entry = filteredLists[virtualRow.index];
-
-                return (
-                  <div
-              key={virtualRow.key}
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: `${virtualRow.size}px`,
-                transform: `translateY(${
-                  virtualRow.start - rowVirtualizer.options.scrollMargin
-                }px)`,
-              }}
-            >
-                  
-                  <ListViewEntry
-                    entry={entry}
-                    style={{ width: '100%' }}
-                    key={virtualRow.key}
-                  />
-                  </div>
-                );
-              })}
-          </div>
+            useWindowScroll
+            data={listItems}
+            itemContent={(_, item) => (
+              <ListViewEntry entry={item} className="" />
+            )}
+            style={{ height: '100vh' }}
+            //increaseViewportBy={5000}
+            overscan={{ main: 5000, reverse: 5000 }}
+            />
         </div>
       </ul>
 
